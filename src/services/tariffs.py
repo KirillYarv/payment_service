@@ -11,5 +11,5 @@ class TariffService:
         self.repository = repository
 
     def list_tariffs(self) -> list[Tariff]:
-        """Return seeded tariffs."""
+        """Return tariffs from the database."""
         return self.repository.list_all()

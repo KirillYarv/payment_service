@@ -14,10 +14,11 @@ from src.repositories.tariffs import TariffRepository
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Seed the required tariffs in an existing PostgreSQL schema."""
+    """Load tariff prices from the database when the application starts."""
     with session_factory() as session:
-        TariffRepository(session).seed()
-        session.commit()
+        app.state.tariff_prices = {
+            tariff.id: tariff.price for tariff in TariffRepository(session).list_all()
+        }
     yield
 
 
