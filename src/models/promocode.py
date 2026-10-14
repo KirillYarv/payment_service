@@ -1,9 +1,10 @@
 """Promotional code stored in PostgreSQL."""
 
-from sqlalchemy import CHAR, SmallInteger
+from sqlalchemy import SmallInteger
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db import Base
+from src.models.types import TrimmedChar
 
 
 class PromoCode(Base):
@@ -11,5 +12,5 @@ class PromoCode(Base):
 
     __tablename__ = "promocodes"
 
-    name: Mapped[str] = mapped_column(CHAR(50), primary_key=True)
+    name: Mapped[str] = mapped_column(TrimmedChar(50), primary_key=True)
     discount: Mapped[int] = mapped_column(SmallInteger, nullable=False)

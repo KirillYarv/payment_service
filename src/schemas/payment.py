@@ -14,7 +14,7 @@ InstallmentMonths = Literal[3, 6, 12]
 class CreatePayment(BaseModel):
     """Valid data for a new payment."""
 
-    tariff_id: str
+    tariff_id: int = Field(gt=0)
     email: EmailStr
     method: PaymentMethod
     installment_months: InstallmentMonths | None = None
@@ -37,7 +37,7 @@ class PaymentResponse(BaseModel):
 
     id: int
     status: PaymentStatus
-    tariff_id: str
+    tariff_id: int
     amount: int
     discount: int
     method: PaymentMethod

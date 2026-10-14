@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Load tariffs and promotional discounts from the existing database."""
     with session_factory() as session:
         inspector = inspect(session.connection())
-        tariff_prices: dict[str, int] = {}
+        tariff_prices: dict[int, int] = {}
         if inspector.has_table("tariffs"):
             tariff_prices = {
                 tariff.id: tariff.price for tariff in TariffRepository(session).list_all()

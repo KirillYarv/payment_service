@@ -16,6 +16,6 @@ class TariffRepository:
         """Return the available tariffs in a stable order."""
         return list(self.session.scalars(select(Tariff).order_by(Tariff.id)))
 
-    def get(self, tariff_id: str) -> Tariff | None:
+    def get(self, tariff_id: int) -> Tariff | None:
         """Find a tariff by its stable identifier."""
         return self.session.get(Tariff, tariff_id)
