@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Path, Response
+from fastapi import APIRouter, Depends, Header, Path, Request, Response
 from sqlalchemy.orm import Session
 
 from src.db import get_session
@@ -16,14 +16,17 @@ router = APIRouter()
 
 @router.post("/payments", response_model=PaymentResponse, status_code=201)
 def create_payment(
-    request: CreatePayment,
+    payload: CreatePayment,
     response: Response,
+    request: Request,
     session: Annotated[Session, Depends(get_session)],
     idempotency_key: Annotated[str | None, Header(max_length=255)] = None,
 ) -> PaymentResponse:
     """Create a payment or return the one associated with the same key."""
-    service = PaymentService(PaymentRepository(session), TariffRepository(session))
-    payment, created = service.create(request, idempotency_key)
+    service = PaymentService(
+        PaymentRepository(session), TariffRepository(session), request.app.state.promocodes
+    )
+    payment, created = service.create(payload, idempotency_key)
     if not created:
         response.status_code = 200
     return PaymentResponse.model_validate(payment)
@@ -31,8 +34,12 @@ def create_payment(
 
 @router.get("/payments/{id}", response_model=PaymentResponse)
 def get_payment(
-    id: Annotated[int, Path(gt=0)], session: Annotated[Session, Depends(get_session)]
+    id: Annotated[int, Path(gt=0)],
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
 ) -> PaymentResponse:
     """Return one payment by its identifier."""
-    service = PaymentService(PaymentRepository(session), TariffRepository(session))
+    service = PaymentService(
+        PaymentRepository(session), TariffRepository(session), request.app.state.promocodes
+    )
     return PaymentResponse.model_validate(service.get(id))

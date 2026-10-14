@@ -3,9 +3,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator, field_validator
-
-from src.constants.payments import PROMO_CODE
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 PaymentStatus = Literal["pending", "succeeded", "failed", "refunded"]
 BankStatus = Literal["succeeded", "failed", "refunded"]
@@ -21,14 +19,6 @@ class CreatePayment(BaseModel):
     method: PaymentMethod
     installment_months: InstallmentMonths | None = None
     promo_code: str | None = None
-
-    @field_validator("promo_code")
-    @classmethod
-    def validate_promo_code(cls, code: str | None) -> str | None:
-        """Reject unknown promotional codes using standard 422 validation."""
-        if code is not None and code.upper() != PROMO_CODE:
-            raise ValueError("unknown promo_code")
-        return code
 
     @model_validator(mode="after")
     def validate_installment(self) -> "CreatePayment":

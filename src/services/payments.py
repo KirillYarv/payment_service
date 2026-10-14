@@ -1,9 +1,10 @@
 """Pricing, installment, and payment creation use cases."""
 
+from collections.abc import Mapping
+
 from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
 
-from src.constants.payments import DISCOUNT_PERCENT
 from src.models.payment import Payment
 from src.repositories.payments import PaymentRepository
 from src.repositories.tariffs import TariffRepository
@@ -20,10 +21,14 @@ class PaymentService:
     """Create and retrieve payments without exposing persistence details."""
 
     def __init__(
-        self, payments: PaymentRepository, tariffs: TariffRepository
+        self,
+        payments: PaymentRepository,
+        tariffs: TariffRepository,
+        promocodes: Mapping[str, int],
     ) -> None:
         self.payments = payments
         self.tariffs = tariffs
+        self.promocodes = promocodes
 
     def create(self, request: CreatePayment, key: str | None) -> tuple[Payment, bool]:
         """Return (payment, created), reusing a previously used key."""
@@ -43,7 +48,20 @@ class PaymentService:
                 }]
             )
 
-        discount = tariff.price * DISCOUNT_PERCENT // 100 if request.promo_code else 0
+        percent = 0
+        if request.promo_code is not None:
+            code = request.promo_code.upper()
+            if code not in self.promocodes:
+                raise RequestValidationError(
+                    [{
+                        "type": "value_error",
+                        "loc": ("body", "promo_code"),
+                        "msg": "Value error, unknown promo_code",
+                        "input": request.promo_code,
+                    }]
+                )
+            percent = self.promocodes[code]
+        discount = tariff.price * percent // 100
         amount = tariff.price - discount
         months = request.installment_months
         schedule = installment_schedule(amount, months) if months is not None else None
