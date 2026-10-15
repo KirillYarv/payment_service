@@ -12,9 +12,16 @@ dependencies = [
     "alembic>=1.13,<2",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "httpx2>=2.6,<3"]
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["src*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

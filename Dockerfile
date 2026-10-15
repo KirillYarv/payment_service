@@ -7,11 +7,12 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 COPY src/ ./src/
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir '.[test]'
 
 COPY main.py ./
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
+COPY tests/ ./tests/
 
 EXPOSE 8000
 
